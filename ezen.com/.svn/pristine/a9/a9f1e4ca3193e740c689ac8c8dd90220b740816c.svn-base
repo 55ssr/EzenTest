@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="MemberSpace">
+	
+	<typeAlias  alias="egovMap" type="egovframework.rte.psl.dataaccess.util.EgovMap"/>
+	<typeAlias  alias="searchVO" type="egovframework.example.sample.service.SampleDefaultVO"/>
+	<typeAlias  alias="memberVO" type="ezen.service.MemberVO"/>
+	
+	<insert  id="memberDAO.insertMember">
+		INSERT INTO  member (
+							userid,
+							pwd,
+							name,
+							gender,
+							birthday,
+							postnum,
+							phone,
+							addr1,
+							addr2,
+							rdate
+						) VALUES (
+							'$userid$',
+							'$pwd$',
+							'$name$',
+							'$gender$',
+							'$birthday$',
+							'$phone$',
+							'$postnum$',
+							'$addr1$',
+							'$addr2$',
+							sysdate
+						)
+	</insert>
+	
+	<update  id="memberDAO.updateMember">
+		UPDATE member 
+			SET
+				name = #name#,
+				gender = #gender#,
+				birthday = #birthday#,
+				postnum = #postnum#,
+				phone = #phone#,
+				addr1 = #addr1#,
+				addr2 = #addr2#
+			WHERE
+				userid = #userid#		
+	</update>
+	<delete  id="memberDAO.deleteMember">
+		DELETE FROM member 
+			WHERE
+				userid = #userid#		
+	</delete>
+	
+	<select id="memberDAO.selectMemberIdCheck" resultClass="java.lang.Integer">
+		SELECT COUNT(*) FROM member
+			WHERE
+				userid=#userid#
+	</select>
+	
+	<select id="memberDAO.selectMemberIdPwdCheck" resultClass="java.lang.Integer">
+		SELECT COUNT(*) FROM member
+			WHERE
+				userid=#userid# AND pwd=#pwd#
+	</select>
+	
+	<select id="memberDAO.selectMemberTotal" resultClass="java.lang.Integer">
+		SELECT COUNT(*) FROM  member
+			WHERE 1=1
+			<isNotNull property="searchCondition">
+				<isNotEmpty property="searchCondition">
+				AND  $searchCondition$ LIKE '%' || #searchKeyword# || '%'
+				</isNotEmpty>
+			</isNotNull>
+	</select>
+	
+	<select  id="memberDAO.selectMemberList"   resultClass="egovMap">
+	SELECT b.* FROM 
+				( SELECT rownum rn, a.* FROM 
+						( SELECT  
+	    							userid,
+						  			name,
+							  		decode(gender,'M','남','F','여') gender,
+							  		to_char(birthday,'yyyy') || '(' ||
+				(to_char(sysdate,'yyyy')-to_char(birthday,'yyyy') + 1) || ')' birthday,
+						  			to_char(rdate,'yyyy-mm-dd') rdate
+							
+							FROM   member  WHERE 1=1
+						      
+							<isNotNull property="searchCondition">
+								<isNotEmpty property="searchCondition">
+								AND  $searchCondition$ LIKE '%' || #searchKeyword# || '%'
+								</isNotEmpty>
+							</isNotNull>	 		
+						      			   
+							ORDER BY rdate DESC
+						) a
+				) b
+		WHERE
+				rn >= #firstIndex#   AND  rn <![CDATA[<=]]>  #lastIndex# 
+	</select>
+	
+	<select id="memberDAO.selectMemberDetail" resultClass="memberVO">
+	 SELECT  
+ 			userid,
+  			name,
+	  		gender,
+	  		to_char(birthday,'yyyy-mm-dd') birthday,
+	  		phone,
+	  		postnum,
+	  		addr1,
+	  		addr2,
+  			rdate
+		FROM   
+			member  WHERE userid = #userid#
+	</select>
+	
+	<select id="memberDAO.selectPostList" resultClass="egovMap">
+		SELECT 
+				postnum,sido,sigun,dong,ri,bunji,others 
+		FROM 
+				post
+		WHERE 
+				dong like '%' || #dong# || '%'
+		OR 
+				ri like '%' || #dong# || '%'
+	</select>
+
+</sqlMap>

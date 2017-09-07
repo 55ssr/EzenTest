@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="BoardASpace">
+
+	<typeAlias  alias="egovMap" type="egovframework.rte.psl.dataaccess.util.EgovMap"/>
+	<typeAlias  alias="searchVO" type="egovframework.example.sample.service.SampleDefaultVO"/>
+	<typeAlias  alias="boardAVO" type="ezen.service.BoardAVO"/>
+
+	<update id="boardADAO.updateBoardA">
+		UPDATE boardA1 SET
+			             title = '$title$'
+                       , name = '$name$'
+                       , content = '$content$'
+                       , hit = 0
+                       , udate = sysdate
+            WHERE
+					unq = '$unq$'
+	
+	</update>
+	
+	<update id="boardADAO.updateBoardAHit">
+		UPDATE  boardA1  SET  hit=hit+1  WHERE  unq=#unq#
+	</update>
+	<delete id ="boardADAO.deleteBoardA">
+		DELETE FROM boardA1 
+			WHERE unq = '$unq$'
+	
+	</delete>
+	<insert id="boardADAO.insertBoardA">
+			INSERT INTO boardA1 
+				( unq
+				  , title
+				  , name
+				  , pwd
+				  , content
+				  , hit
+				  , rdate
+				  , udate )
+			VALUES ( boardA1_seq.nextval
+				  , #title#
+				  , '$pwd$'
+				  , #name#
+				  , #content#
+				  , '0'
+				  , sysdate
+				  , sysdate )
+	</insert>
+	<insert id="boardADAO.insertCommBoardA">
+			INSERT INTO boardA2
+				(
+					unq,
+					writer,
+					pwd,
+					comm,
+					fid
+				)
+			VALUES (
+				boardA2_seq.nextval
+				,'$writer$'
+				,'$pwd$'
+				,'$comm$'
+				,#fid#
+				)
+	
+	</insert>
+	<select id="boardADAO.selectBoardACommList"  resultClass="egovMap">
+	
+		SELECT 
+			unq,
+			writer,
+			pwd,
+			comm
+		FROM
+			boardA2
+		where fid='$unq$'
+	</select>
+	<select id="boardADAO.selectBoardAList" resultClass="egovMap">
+
+		SELECT b.* FROM (
+			SELECT rownum rn, a.* FROM (
+							SELECT
+									unq,
+									title,
+									name,
+									TO_CHAR(rdate,'yyyy-mm-dd') rdate,
+									hit,
+									TO_CHAR(udate,'yyyy-mm-dd')udate
+								FROM
+									boardA1
+							WHERE
+									1=1
+					<isNotNull property="searchCondition">
+						<isNotEmpty property="searchCondition">
+							AND $searchCondition$ LIKE '%' || #searchKeyword# || '%'
+						</isNotEmpty>
+					</isNotNull>
+											) a
+							) b
+					WHERE
+						rn >= #firstIndex#
+			<![CDATA[ 
+						AND rn <=
+								#lastIndex#
+			]]> 			
+ 	</select>
+	<select id = "boardADAO.selectBoardATotal" resultClass ="java.lang.Integer">
+	SELECT COUNT(*) cnt FROM boardA1
+		WHERE 
+				1=1
+			
+			<isNotNull property="searchCondition">
+				<isNotEmpty property="searchCondition">
+			AND
+					$searchCondition$	LIKE '%' || #searchKeyword# || '%'	
+	
+				</isNotEmpty>
+			</isNotNull>	
+	</select>
+	
+	<select id="boardADAO.selectBoardADetail" resultClass ="boardAVO">
+	
+			SELECT 
+				title,
+				pwd,
+				name,
+				content,
+				unq
+				
+			FROM
+				boardA1
+			WHERE
+				unq = '$unq$'
+
+	</select>
+	<select id="boardADAO.selectBoardADetail2" resultClass ="boardAVO">
+	
+			SELECT 
+				title,
+				pwd,
+				name,
+				content,
+				unq
+				
+			FROM
+				boardA1
+			WHERE
+				unq = '$unq$'
+
+	</select>
+	<select id="boardADAO.selectPwdCheck" resultClass="java.lang.Integer">
+			SELECT COUNT(*) FROM boardA1
+				WHERE
+					name=#name# 
+				AND
+					pwd=#pwd#
+	
+	</select>
+	<select id="boardADAO.selectCommPwdCheck" resultClass="java.lang.Integer">
+			SELECT COUNT(*) FROM boardA2
+				WHERE
+					unq='$unq$'
+				AND
+					pwd='$pwd$'
+	
+	</select>
+	<select id="boardADAO.selectCommBoardADetail2" resultClass="boardAVO">
+		SELECT
+			unq,
+			writer,
+			pwd,
+			comm
+		FROM 
+			boardA2
+		WHERE
+			unq = '$unq$'
+	
+	</select>
+	<update id="boardADAO.updateCommBoardA">
+		UPDATE boardA2 SET 
+			writer ='$writer$'
+			,comm = '$comm$'
+			,pwd = '$pwd$'
+		WHERE 
+			unq = '$unq$'
+	
+	</update>
+	
+	<delete id="boardADAO.deleteCommBoardA">
+		DELETE FROM boardA2 
+			WHERE unq = '$unq$'
+	</delete>
+</sqlMap>
+
+
+
+
+
+
+

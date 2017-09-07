@@ -1,0 +1,206 @@
+package ezen.web;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.view.json.MappingJackson2JsonView;
+
+import egovframework.example.sample.service.SampleDefaultVO;
+import ezen.service.MemberService;
+import ezen.service.MemberVO;
+
+
+@Controller
+public class MemberController {
+	
+	/** memberService */
+	@Resource(name = "memberService")
+	private MemberService memberService;
+	
+	/** MappingJackson2JsonView */
+	@Resource(name = "jsonView")
+	protected MappingJackson2JsonView jsonView;
+
+	
+	@RequestMapping("/memberWrite.do")
+	public String memberWrite() {
+		return "member/memberWrite";
+	}	
+	
+	@RequestMapping("/post1.do")
+	public String post1() {
+		return "member/post1";
+	}
+	
+	@RequestMapping("/loginWrite.do")
+	public String loginWrite() {
+		
+		return "member/loginWrite";
+	}
+	
+	
+	@RequestMapping("/post2.do")
+	public String selectPostList(@RequestParam("dong") String dong,
+													   Model model) throws Exception {
+
+		System.out.println("dong === : " + dong);
+		
+		List<?> list = memberService.selectPostList(dong);	
+		model.addAttribute("resultList",list);
+		
+		return "member/post2";
+	}
+	
+	@RequestMapping(value = "/memberSave.do")
+	@ResponseBody public Map<String, Object> insertMember(MemberVO vo) throws Exception {
+		
+		String result = "";
+		HashMap<String, Object> map = new HashMap<String, Object>();
+		
+		System.out.println("=====member controller====" + vo.getName());
+
+		result = memberService.insertMember(vo);
+		if(result == null) result = "ok";
+		map.put("result", result);
+
+		return map;
+	}
+	
+	@RequestMapping(value = "/memberUpdate.do")
+	@ResponseBody public Map<String, Object> updateMember(MemberVO vo) throws Exception {
+		
+		int cnt = 0;
+		HashMap<String, Object> map = new HashMap<String, Object>();
+		
+		System.out.println("=====member controller====" + vo.getName());
+
+		cnt = memberService.updateMember(vo);
+		map.put("cnt", cnt);
+
+		return map;
+	}
+	
+	@RequestMapping(value = "/memberDelete.do")
+	@ResponseBody public Map<String, Object> deleteMember(MemberVO vo) throws Exception {
+		
+		int cnt = 0;
+		HashMap<String, Object> map = new HashMap<String, Object>();
+		cnt = memberService.deleteMember(vo);
+		map.put("cnt", cnt);
+		return map;
+	}
+	
+	@RequestMapping(value = "/memberIdCheck.do")
+	@ResponseBody public Map<String, Object> selectMemberIdCheck(MemberVO vo) 
+								throws Exception {
+		//String result = "";
+		int cnt = 0;
+		HashMap<String, Object> map = new HashMap<String, Object>();
+		
+		System.out.println("=====member controller====" + vo.getUserid());
+
+		cnt = memberService.selectMemberIdCheck(vo);
+		
+		map.put("cnt", cnt);
+
+		return map;
+	}
+	
+	@RequestMapping("/memberDetail.do")
+	public String selectMemberDetail(@RequestParam("userid") String userid,Model model) throws Exception {
+
+		MemberVO vo = memberService.selectMemberDetail(userid);	                                 
+		model.addAttribute("vo",vo);
+		return "member/memberDetail";
+	}
+	
+	@RequestMapping("/memberList.do")
+	public String selectMemberList(@ModelAttribute("searchVO") SampleDefaultVO searchVO,Model model) throws Exception {
+	
+		/*1. 한 화면에 출력할 행 개수 , 한 화면에 출력할 페이지 개수 */ 
+			int recordCountPerPage = 10;
+			int pageSize = 5;
+		/*2. 총 데이터 개수 */
+			int totalCount = memberService.selectMemberTotal(searchVO);
+		/*3. 화면 출력할 페이지 번호 */
+			int pageIndex = searchVO.getPageIndex();		
+		/*4. 화면 출력할 페이징의 시작 번호 , 끝 번호 */
+			//  1,2,3,4,5  -> 1 / 6,7,8,9,10 -> 6 / 11,12,13,14,15 -> 11
+			int firstPage = ((int) Math.floor((pageIndex-1)/pageSize)*pageSize) + 1 ;
+			int lastPage = (firstPage + pageSize) - 1;
+		/*5. 화면 출력할 행(데이터)의 시작 번호, 끝 번호 */
+			int firstIndex = (pageIndex - 1) * 10 + 1;
+			int lastIndex = (firstIndex + recordCountPerPage) - 1;
+		/*6. 총 페이지 개수 */
+			int totalPage = (int) Math.ceil((double)totalCount / recordCountPerPage);
+		
+			/*7. [이전] / [다음] 처리할 변수 지정 */
+			int before = 0;    // 링크 없음
+			if(firstPage > 1) before = 1;
+			
+			int next = 0;      // 링크 없음
+			if(lastPage <= totalPage) next = 1;
+		/*7. 행번호 */
+			int number = totalCount - ((pageIndex-1) * recordCountPerPage);
+
+		searchVO.setFirstIndex(firstIndex);
+		searchVO.setLastIndex(lastIndex);
+			
+		List<?> list = memberService.selectMemberList(searchVO);	
+
+		model.addAttribute("totalCount", totalCount);  // 총 데이터 수량
+		model.addAttribute("firstPage", firstPage);	  
+		model.addAttribute("lastPage", lastPage);
+		model.addAttribute("totalPage", totalPage);   // 총 페이지 개수
+		model.addAttribute("before", before);		  // before 버튼 활성화 유무
+		model.addAttribute("next", next);			  // next 버튼 활성화 유무
+		model.addAttribute("number", number);		  // 출력 페이지 row 번호
+
+		model.addAttribute("resultList",list);
+		return "member/memberList";
+	}
+	
+	@RequestMapping(value = "/login.do")
+	@ResponseBody public Map<String, Object> loginAction(
+										MemberVO vo,
+										HttpServletRequest request
+										) throws Exception {
+		int cnt = -1;
+		HashMap<String, Object> map = new HashMap<String, Object>();
+
+		cnt = memberService.selectMemberIdPwdCheck(vo);
+
+		if(cnt > 0) {
+			/* 세션 변수 생성 */
+			map.put("userId", vo.getUserid());
+			map.put("userPwd", vo.getPwd());
+			
+			request.getSession().setAttribute("loginCertification", map);
+		} 
+		map.put("cnt", cnt);
+		return map;
+	}
+	@RequestMapping(value = "/logOut.do")
+	@ResponseBody public Map<String, Object> logOutAction(
+										MemberVO vo,
+										HttpServletRequest request
+										) throws Exception {
+		HashMap<String, Object> map = new HashMap<String, Object>();
+		request.getSession().setAttribute("loginCertification", null);
+		map.put("result","ok");
+		return map;
+	}
+}
+
+
+
+

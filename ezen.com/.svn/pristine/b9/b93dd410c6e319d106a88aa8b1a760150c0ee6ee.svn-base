@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="Sample">
+
+	<typeAlias  alias="egovMap" type="egovframework.rte.psl.dataaccess.util.EgovMap"/>
+	<typeAlias  alias="searchVO" type="egovframework.example.sample.service.SampleDefaultVO"/>
+	<typeAlias  alias="deptVO" type="egovframework.example.sample.service.DeptVO"/>
+
+	<resultMap id="sample" class="egovframework.example.sample.service.SampleVO">
+		<result property="id" column="id"/>
+		<result property="name" column="name"/>
+		<result property="description" column="description"/>
+		<result property="useYn" column="use_yn"/>
+		<result property="regUser" column="reg_user"/>
+	</resultMap>
+
+	<insert id="sampleDAO.insertSample">
+		<![CDATA[
+			INSERT INTO SAMPLE 
+				( ID
+				  , NAME
+				  , DESCRIPTION
+				  , USE_YN
+				  , REG_USER )
+			VALUES ( #id#
+				  , #name#
+				  , #description#
+				  , #useYn#
+				  , #regUser# )
+		]]>
+	</insert>
+	
+	<insert id="sampleDAO.insertDept">
+		INSERT INTO dept 
+				( deptno,
+				  dname,
+				  loc )
+			VALUES (  #deptno#,
+					  #dname#,
+					  #loc#)
+	</insert>
+	
+	<update id="sampleDAO.updateSample">
+		<![CDATA[
+			UPDATE SAMPLE
+			SET ID=#id#
+				, NAME=#name#
+				, DESCRIPTION=#description#
+				, USE_YN=#useYn#
+			WHERE ID=#id#
+		]]>
+	</update>
+	
+	<update id="sampleDAO.updateDept">
+		UPDATE  dept  SET  dname=#dname#,loc=#loc#
+			WHERE deptno=#deptno#
+	</update>
+	
+	
+	<delete id="sampleDAO.deleteSample">
+		<![CDATA[
+			DELETE FROM SAMPLE 
+			WHERE ID=#id#
+		]]>
+	</delete>
+	
+	<delete id="sampleDAO.deleteDept">
+			DELETE FROM dept 
+			WHERE deptno=#deptno#
+	</delete>
+	
+    
+    <select id="sampleDAO.selectSample" resultMap="sample">
+        <![CDATA[
+            SELECT
+                ID, NAME, DESCRIPTION, USE_YN, REG_USER
+            FROM SAMPLE 
+            WHERE ID=#id#
+        ]]>
+    </select>
+	
+	<select id="sampleDAO.selectDeptDetail" resultClass="deptVO">
+		SELECT deptno,dname,loc  FROM  dept
+			WHERE  deptno=#deptno#
+	</select>
+	
+	
+	
+	
+	<select id="sampleDAO.selectSampleList" parameterClass="searchVO" resultClass="egovMap">
+
+			SELECT
+				ID, NAME, DESCRIPTION, USE_YN, REG_USER
+			FROM SAMPLE
+			WHERE 1=1
+			<isEqual prepend="AND" property="searchCondition" compareValue="0">
+				ID LIKE '%' || #searchKeyword# || '%'
+			</isEqual>
+			<isEqual prepend="AND" property="searchCondition" compareValue="1">
+				NAME LIKE '%' || #searchKeyword# || '%'
+			</isEqual>
+			ORDER BY ID ASC
+	</select>
+	
+	<select id="sampleDAO.selectSampleListTotCnt" parameterClass="searchVO" resultClass="int">
+
+			SELECT COUNT(*) totcnt
+			FROM SAMPLE
+			WHERE 1=1
+			<isEqual prepend="AND" property="searchCondition" compareValue="0">
+				ID LIKE '%' || #searchKeyword# || '%'
+			</isEqual>
+			<isEqual prepend="AND" property="searchCondition" compareValue="1">
+				NAME LIKE '%' || #searchKeyword# || '%'
+			</isEqual>
+	</select>
+	
+	<select id="sampleDAO.selectDeptList" parameterClass="searchVO" resultClass="egovMap">
+		SELECT  deptno,dname,loc  FROM  dept
+	</select>
+
+</sqlMap>

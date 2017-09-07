@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="EmpSpace">
+
+	<typeAlias  alias="egovMap" type="egovframework.rte.psl.dataaccess.util.EgovMap"/>
+	<typeAlias  alias="searchVO" type="egovframework.example.sample.service.SampleDefaultVO"/>
+	<typeAlias  alias="empVO" type="egovframework.example.sample.service.EmpVO"/>
+
+	<resultMap id="emp" class="egovframework.example.sample.service.EmpVO">
+		<result property="empno" column="empno"/>
+		<result property="ename" column="ename"/>
+		<result property="sal" column="sal"/>
+		<result property="hiredate" column="hiredate"/>
+		<result property="comm" column="comm"/>
+		<result property="job" column="job"/>
+		<result property="mgr" column="mgr"/>
+		<result property="deptno" column="deptno"/>
+	</resultMap>
+
+	<insert id="empDAO.insertEmp">
+			INSERT INTO emp 
+				( empno
+				  , ename
+				  , job
+				  , sal
+				  , hiredate
+				  , comm
+				  , mgr
+				  , deptno )
+			VALUES ( #empno#
+				  , #ename#
+				  , #job#
+				  , #sal#
+				  , #hiredate#
+				  , #comm#
+				  , #mgr#
+				  , #deptno# )
+	</insert>
+	
+	<select id="empDAO.selectEmpList"  resultClass="egovMap">
+		SELECT b.* FROM (	
+			SELECT rownum rn, a.* FROM (	
+				SELECT  empno,
+						ename,
+						job,
+						hiredate,
+						deptno
+				FROM
+					emp
+						ORDER BY hiredate DESC
+									) a
+					) b
+		WHERE
+			 	rn >= $firstIndex$  AND  rn <![CDATA[<=]]> $lastIndex$ 
+	</select>
+	
+	<select id="empDAO.selectEmpDetail" resultClass="empVO">
+		SELECT empno, ename, job, sal, comm, deptno, mgr, 
+		       to_char(hiredate,'yyyy-mm-dd') hiredate
+		FROM
+			 emp 
+		WHERE 
+			empno = #empno#
+	</select>
+	
+	<update id="empDAO.updateEmp">
+			UPDATE emp  SET
+				   ename = #ename#
+				  , job = #job#
+				  , sal = #sal#
+				  , hiredate = #hiredate#
+				  , comm = #comm#
+				  , mgr = #mgr#
+				  , deptno = #deptno#
+			WHERE 
+				empno = #empno#
+	</update>
+	<delete id="empDAO.deleteEmp">
+		DELETE FROM emp WHERE empno = #empno#
+	</delete>
+	
+	<select id="empDAO.selectEmpTotal" resultClass="java.lang.Integer">
+		SELECT COUNT(*) FROM emp
+	</select>
+	
+	<select id="empDAO.selectEmpJob" resultClass="egovMap">
+		SELECT distinct(job) job  FROM emp ORDER BY job ASC
+	</select>
+	
+	<select id="empDAO.selectEmpNames" resultClass="egovMap">
+		SELECT ename,empno FROM emp ORDER BY ename ASC
+	</select>
+</sqlMap>
+
+
+
+

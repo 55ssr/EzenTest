@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="dataBoardASpace">
+
+	<typeAlias  alias="egovMap" type="egovframework.rte.psl.dataaccess.util.EgovMap"/>
+	<typeAlias  alias="searchVO" type="egovframework.example.sample.service.SampleDefaultVO"/>
+	<typeAlias  alias="dataBoardAVO" type="ezen.service.DataBoardAVO"/>
+	
+	<insert id="dataBoardADAO.insertDataBoard">
+		INSERT INTO dataBoard (
+					unq
+				  , title
+				  , name
+				  , pwd
+				  , content
+				  , hit
+				  , rdate
+				  , filename
+				  )
+			VALUES ( 
+					boardA1_seq.nextval
+				  , #title#
+				  , #name#
+				  , '$pwd$'
+				  , #content#
+				  , '0'
+				  , sysdate
+				  , '$filename$'
+				 )
+	</insert>
+	<update id="dataBoardADAO.updateDataBoardHitUp">
+		UPDATE  dataBoard  SET  hit=hit+1  WHERE  unq=#unq#
+	</update>
+	
+	<select id="dataBoardADAO.selectDataBoardDetail" resultClass="dataBoardAVO">
+		SELECT 
+					unq
+				  , title
+				  , name
+				  , pwd
+				  , content
+				  , hit
+				  , rdate
+				  , filename
+		FROM
+				dataBoard
+		WHERE
+				unq = '$unq$'
+	
+	</select>
+	
+	<select id="dataBoardADAO.selectDataBoard" resultClass="egovMap">
+
+		SELECT b.* FROM (
+			SELECT rownum rn, a.* FROM (
+							SELECT
+									unq,
+									title,
+									name,
+									TO_CHAR(rdate,'yyyy-mm-dd') rdate,
+									hit,
+									filename
+									
+								FROM
+									dataBoard
+							WHERE
+									1=1
+					<isNotNull property="searchCondition">
+						<isNotEmpty property="searchCondition">
+							AND $searchCondition$ LIKE '%' || #searchKeyword# || '%'
+						</isNotEmpty>
+					</isNotNull>
+							ORDER BY rdate DESC
+											) a
+							) b
+					WHERE
+						rn >= #firstIndex#
+			<![CDATA[ 
+						AND rn <= #lastIndex#
+			]]> 			
+ 	</select>
+	
+	<select id = "dataBoardADAO.selectBoardATotal" resultClass ="java.lang.Integer">
+	SELECT COUNT(*) cnt FROM dataBoard
+		WHERE 
+				1=1
+			
+			<isNotNull property="searchCondition">
+				<isNotEmpty property="searchCondition">
+			AND
+					$searchCondition$	LIKE '%' || #searchKeyword# || '%'	
+	
+				</isNotEmpty>
+			</isNotNull>	
+	</select>
+	
+	<select id="dataBoardADAO.selectDataPwdChk" resultClass="java.lang.Integer">
+	
+		SELECT COUNT(*) FROM dataBoard
+			WHERE
+				unq = '$unq$'
+			AND
+				pwd = '$pwd$'
+	
+	</select>
+	
+	<update id="dataBoardADAO.updateDataBoard">
+		UPDATE dataBoard SET
+					title = '$title$',
+					name = '$name$',
+					content = '$content$',
+					filename = filename || '／' || '$filename$'
+				WHERE 
+					unq = '$unq$'
+	</update>
+	<delete id="dataBoardADAO.deleteDataBoard">
+		DELETE FROM dataBoard 
+			WHERE
+				unq='$unq$'
+	</delete>
+	<update id="dataBoardADAO.deleteOnlyFile">
+		UPDATE dataBoard SET
+				filename = replace(filename,'$filename$','')
+
+			WHERE
+				unq='$unq$' 
+	</update>
+	<select id="dataBoardADAO.selectDataFileChk" resultClass="java.lang.Integer">
+		SELECT COUNT(*) FROM dataBoard
+			WHERE
+				unq ='$unq$'
+			AND
+				filename like '%' || '$filename$' || '%' 
+	
+	</select>
+
+</sqlMap>
+
+
+
+
+
+
+

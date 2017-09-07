@@ -1,0 +1,271 @@
+package ezen.web;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Resource;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.view.json.MappingJackson2JsonView;
+
+import egovframework.example.sample.service.SampleDefaultVO;
+import egovframework.rte.fdl.property.EgovPropertyService;
+import ezen.service.BoardAService;
+import ezen.service.BoardAVO;
+
+@Controller
+public class BoardAController {
+
+	@Resource(name = "boardAService")
+	private BoardAService boardAService;
+
+	/** MappingJackson2JsonView */
+	@Resource(name = "jsonView")
+	protected MappingJackson2JsonView jsonView;
+
+	@Resource(name = "propertiesService")
+	protected EgovPropertyService propertiesService;
+
+	@RequestMapping("/boardAWrite.do")
+	public String boardWrite() {
+		return "boardA/boardAWrite";
+	}
+
+	@RequestMapping("/boardADetailPwdChk.do")
+	public String boardADetailPwdChk(@RequestParam("unq") int unq, Model model) throws Exception {
+
+		BoardAVO boardAVO = new BoardAVO();
+		boardAVO.setUnq(unq);
+
+		boardAVO = boardAService.selectBoardADetailPwdChk(boardAVO);
+		model.addAttribute("boardVO", boardAVO);
+
+		return "boardA/boardADetailPwdChk";
+	}
+
+	@RequestMapping("/commPwdChk.do")
+	public String commPwdChk(@RequestParam("unq") int unq, Model model) throws Exception {
+		BoardAVO boardAVO = new BoardAVO();
+		boardAVO.setUnq(unq);
+
+		boardAVO = boardAService.selectCommBoardADetail2(boardAVO);
+		model.addAttribute("commPop", boardAVO);
+
+		return "boardA/commPwdChk";
+	}
+
+	@RequestMapping(value = "/boardASave.do")
+	@ResponseBody
+	public Map<String, Object> insertBoardA(BoardAVO boardAVO) throws Exception {
+
+		String result = "";
+
+		HashMap<String, Object> map = new HashMap<String, Object>();
+		System.out.println("=====boardA controller====" + boardAVO.getTitle());
+		result = boardAService.insertBoardA(boardAVO);
+
+		if (result == null)
+			result = "ok";
+
+		map.put("result", result);
+
+		return map;
+	}
+
+	@RequestMapping(value = "/boardAupdate.do")
+	@ResponseBody
+	public Map<String, Object> updateBoardA(BoardAVO boardAVO) throws Exception {
+		int cnt = 0;
+
+		HashMap<String, Object> map = new HashMap<String, Object>();
+
+		cnt = boardAService.selectPwdCheck(boardAVO);
+
+		if (cnt > 0) {
+			boardAService.updateBoardA(boardAVO);
+		}
+
+		map.put("cnt", cnt);
+
+		return map;
+	}
+
+	@RequestMapping(value = "/boardACommUpdate.do")
+	@ResponseBody
+	public Map<String, Object> boardACommUpdate(BoardAVO boardAVO) throws Exception {
+		int cnt = 0;
+
+		HashMap<String, Object> map = new HashMap<String, Object>();
+
+		cnt = boardAService.selectCommPwdCheck(boardAVO);
+
+		if (cnt > 0) {
+			boardAService.updateCommBoardA(boardAVO);
+		}
+
+		map.put("cnt", cnt);
+
+		return map;
+	}
+
+	@RequestMapping(value = "/boardAdelete.do")
+	@ResponseBody
+	public Map<String, Object> deleteBoardA(BoardAVO boardAVO) throws Exception {
+		int cnt = 0;
+
+		HashMap<String, Object> map = new HashMap<String, Object>();
+
+		cnt = boardAService.selectPwdCheck(boardAVO);
+		if (cnt > 0) {
+			boardAService.deleteBoardA(boardAVO);
+		}
+
+		map.put("cnt", cnt);
+
+		return map;
+	}
+
+	@RequestMapping(value = "/boardACommDelete.do")
+	@ResponseBody
+	public Map<String, Object> boardACommDelete(BoardAVO boardAVO) throws Exception {
+		int cnt = 0;
+
+		HashMap<String, Object> map = new HashMap<String, Object>();
+
+		cnt = boardAService.selectCommPwdCheck(boardAVO);
+		if (cnt > 0) {
+			boardAService.deleteCommBoardA(boardAVO);
+		}
+
+		return map;
+	}
+
+	@RequestMapping(value = "/pwdCheck.do")
+	@ResponseBody
+	public Map<String, Object> pwdCheck(BoardAVO boardAVO) throws Exception {
+		int cnt = 0;
+
+		HashMap<String, Object> map = new HashMap<String, Object>();
+
+		cnt = boardAService.selectPwdCheck(boardAVO);
+
+		map.put("cnt", cnt);
+
+		return map;
+	}
+
+	@RequestMapping(value = "/boardACommSave.do")
+	@ResponseBody
+	public Map<String, Object> insertCommBoardA(BoardAVO boardAVO) throws Exception {
+
+		String result = "";
+		HashMap<String, Object> mapcommSave = new HashMap<String, Object>();
+		System.out.println("=====C COMM====" + boardAVO.getComm());
+		System.out.println("=====C UNQ====" + boardAVO.getUnq());
+		System.out.println("=====C PWD====" + boardAVO.getPwd());
+		System.out.println("=====C FID====" + boardAVO.getFid());
+		System.out.println("=====C WRITER====" + boardAVO.getWriter());
+
+		result = boardAService.insertCommBoardA(boardAVO);
+
+		if (result == null)
+			result = "ok";
+
+		mapcommSave.put("result", result);
+
+		return mapcommSave;
+	}
+
+	@RequestMapping("/boardAList.do")
+	public String boardASelectList(@ModelAttribute("searchVO") SampleDefaultVO searchVO, Model model) throws Exception {
+
+		int recordCountPerPage = 10;
+		int pageSize = 5;
+		int totalCount = boardAService.selectBoardATotal(searchVO);
+		System.out.println("-----control-----");
+		int pageIndex = searchVO.getPageIndex(); // 사용자가 누른 페이지 값을 가져와야한다.
+
+		int firstPage = ((int) Math.floor((pageIndex - 1) / pageSize) * pageSize) + 1;
+		int lastPage = (firstPage + pageSize) - 1;
+
+		// 사용자가 1Page를 누른경우 1 , 2Pages 를 누른경우 11, 3Pages를 누른경우 31
+		// 5. 화면 출력할 행(데이터)의 시작 번호
+		int firstIndex = (pageIndex - 1) * 10 + 1;
+		// firstIndex가 1이면 10, 11이면 20, 21이면 30
+		// 5. 끝번호 (데이터베이스) recordCountPerPage 데이터 갯수
+		int lastIndex = (firstIndex + recordCountPerPage) - 1;
+
+		// 6. 총 페이지 개수
+		int totalPage = (int) Math.ceil((double) totalCount / recordCountPerPage);
+		// 7. [이전] / [다음] 처리할 변수 지정
+		int before = 0; // 링크 없음
+		if (firstPage > 1)
+			before = 1;
+		int next = 0; // 링크 없음
+		if (lastPage <= totalPage)
+			next = 1;
+
+		// 8. 행번호
+		searchVO.setFirstIndex(firstIndex);
+		searchVO.setLastIndex(lastIndex); // 계산한값을 VO에 태워 새로 셋팅을 해준다.
+
+		int total = boardAService.selectBoardATotal(searchVO);
+
+		// 사용자가 1Page를 보고있으면 total 값, 2Pages를 보고있으면 total-10, 3Pages는 total-20
+		int topNumber = total - (pageIndex - 1) * 10;
+
+		// lastPage는 화면에 뿌려야 한다 그러므로 model 사용
+
+		List<?> selectBoardAList = boardAService.selectBoardAList(searchVO);
+
+		model.addAttribute("recordCountPerPage", recordCountPerPage);
+		model.addAttribute("totalCount", totalCount);
+		model.addAttribute("firstPage", firstPage);
+		model.addAttribute("lastPage", lastPage);
+
+		model.addAttribute("totalPage", totalPage);
+		model.addAttribute("before", before);
+		model.addAttribute("next", next);
+
+		model.addAttribute("boardList", selectBoardAList);
+		model.addAttribute("number", topNumber);
+
+		return "boardA/boardAList";
+	}
+
+	@RequestMapping("/boardADetail.do")
+	public String boardASelectDetail(@RequestParam("unq") int unq, Model model) throws Exception {
+		BoardAVO boardAVO = new BoardAVO();
+		boardAVO.setUnq(unq);
+
+		List<?> selectBoardACommList = boardAService.selectBoardACommList(boardAVO);
+		boardAService.updateBoardAHit(unq);
+		boardAVO = boardAService.selectBoardADetail(boardAVO);
+		model.addAttribute("boardVO", boardAVO);
+		model.addAttribute("commList", selectBoardACommList);
+
+		return "boardA/boardADetail";
+	}
+
+	@RequestMapping("/boardADetail2.do")
+	public String boardASelectDetail2(@RequestParam("unq") int unq, Model model) throws Exception {
+
+		BoardAVO boardAVO = new BoardAVO();
+		boardAVO.setUnq(unq);
+
+		List<?> selectBoardACommList = boardAService.selectBoardACommList(boardAVO);
+
+		boardAVO = boardAService.selectBoardADetail2(boardAVO);
+		model.addAttribute("boardVO", boardAVO);
+		model.addAttribute("commList", selectBoardACommList);
+
+		return "boardA/boardADetail2";
+	}
+
+}

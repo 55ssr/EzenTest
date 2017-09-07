@@ -1,0 +1,20 @@
+package ezen.service;
+
+import java.util.List;
+
+import egovframework.example.sample.service.SampleDefaultVO;
+
+public interface BoardAService {
+	
+	String insertBoardA(BoardAVO boardAVO) throws Exception;
+	
+	String insertCommBoardA(BoardAVO boardAVO) throws Exception;
+
+	List<?> selectBoardAList(SampleDefaultVO searchVO)throws Exception;
+
+	int selectBoardATotal(SampleDefaultVO searchVO);
+	
+	BoardAVO selectBoardADetail(BoardAVO boardAVO) throws Exception;
+	
+	List<?> selectBoardACommList(SampleDefaultVO searchVO) throws Exception;
+}

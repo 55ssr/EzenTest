@@ -1,0 +1,96 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+	pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@ taglib prefix="form" uri="http://www.springframework.org/tags/form"%>
+<%@ taglib prefix="ui" uri="http://egovframework.gov/ctl/ui"%>
+<%@ taglib prefix="spring" uri="http://www.springframework.org/tags"%>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Insert title here</title>
+<script src="js/jquery-2.2.2.js"></script>
+<script src="js/jquery-ui.js"></script>
+</head>
+
+<script type="text/javascript">
+	$(function() {
+
+		$("#commModBtn").click(function() {
+			var loc = "<c:url value='/boardACommUpdate.do' />";
+			var msg = "변경";
+			fn_ajax(loc,msg);
+			
+		});
+		$("#commDelBtn").click(function() {
+			var loc = "<c:url value='/boardACommDelete.do' />";
+			var msg = "변경";
+			fn_ajax(loc,msg);
+
+		});
+	});
+	function fn_ajax(loc,msg) {
+		
+		$.ajax({
+			type: 'POST',
+			data: $("#comm2Frm").serialize(),
+			url: loc,
+			dataType: "json",
+			success: function (data) {
+				if(data.cnt > 0) {
+					alert(msg + " 처리 됬습니다.");
+					opener.parent.location.reload();
+					self.close();
+				} else {
+					alert(msg + " : 비밀번호를 확인하세요.");
+					
+				}
+			},
+			error: function (error) {
+				alert("error : " + error);
+			}
+		});
+	}
+</script>
+
+<body>
+	<form id="comm2Frm" name="comm2Frm">
+		<table align="center" border="0" cellspacing="1" bgColor="#cccccc"
+			width="400pt" height="150">
+			<tr height="50">
+				<td align="center" bgcolor="#ffffff"><br>
+					<h3 class="tit_join">[ 답글 수정 OR 삭제 ]</h3> <br>
+					<div class="txt_desc">수정 삭제 입 니 다.</div></td>
+			</tr>
+		</table>
+		<table align="center" border="0" cellspacing="1" bgColor="#cccccc"
+			width="400pt" height="150">
+			
+			<tr bgcolor="#ffffff">
+				<td width="20%" height="50pt">이름  : <input type="text" name="writer" id="writer" value="${commPop.writer }"/></td>
+				<tr bgcolor="#ffffff">
+				<td width="20%" height="50pt">비번  : <input type="password" name="pwd" id="pwd" value=""/></td>
+				</tr>
+				<tr height="50">
+				<td align="center" bgcolor="#ffffff" colspan="3"><font
+					color="red">+[RE]</font></td>
+				</tr>
+				<tr bgcolor="#ffffff" height="100">
+				<td>
+				<textarea name="comm" id="comm" style="width: 99%; height: 99%">${commPop.comm }</textarea>
+				<input type="hidden" name="unq" id="unq" value="${commPop.unq }" />
+				</td>
+				</tr>
+			<tr bgcolor="#ffffff">
+				<td colspan="4" align="center">
+				<input type="button" name="commModBtn" id="commModBtn" value="답글 수정 ">
+				<input type="button" name="commDelBtn" id="commDelBtn" value="답글 삭제 ">
+				</td>
+			</tr>
+		</table>
+	</form>
+
+
+</body>
+</html>

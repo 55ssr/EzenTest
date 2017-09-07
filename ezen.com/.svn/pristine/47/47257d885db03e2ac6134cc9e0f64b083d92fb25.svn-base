@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="BoardSpace">
+
+	<typeAlias  alias="egovMap" type="egovframework.rte.psl.dataaccess.util.EgovMap"/>
+	<typeAlias  alias="searchVO" type="egovframework.example.sample.service.SampleDefaultVO"/>
+	<typeAlias  alias="boardVO" type="ezen.service.BoardVO"/>
+
+	<insert id="boardDAO.insertBoard">
+			INSERT INTO reBoard 
+				( unq
+				  , fid
+				  , title
+				  , pwd
+				  , name
+				  , content
+				  , hit
+				  , thread
+				  , rdate )
+			VALUES ( reboard_unq.nextval
+				  ,(select decode(max(fid),'',1,max(fid)+1) from reBoard)
+				  , #title#
+				  , #pwd#
+				  , #name#
+				  , #content#
+				  , '0'
+				  , 'a'
+				  , sysdate )
+	</insert>
+	
+	<insert id="boardDAO.insertBoardReply">
+			INSERT INTO reBoard 
+				( unq
+				  , fid
+				  , title
+				  , pwd
+				  , name
+				  , content
+				  , hit
+				  , thread
+				  , rdate )
+			VALUES ( reboard_unq.nextval
+				  , #fid#
+				  , #title#
+				  , #pwd#
+				  , #name#
+				  , #content#
+				  , '0'
+				  , #thread#
+				  , sysdate )
+	</insert>
+	
+	<select  id="boardDAO.selectBoardList"   resultClass="egovMap">
+	SELECT b.* FROM (
+	    SELECT  rownum rn, a.* FROM (
+						  	 SELECT  unq,
+						  			title,
+						  			name,
+						  			TO_CHAR(rdate,'yyyy-mm-dd') rdate,
+						  			 hit,
+						  			 thread
+						      FROM  reBoard  
+						      
+						      WHERE
+						      		1=1
+						      
+							<isNotNull property="searchCondition">
+								<isNotEmpty property="searchCondition">
+								AND  $searchCondition$ LIKE '%' || #searchKeyword# || '%'
+								</isNotEmpty>
+							</isNotNull>		
+						      		   
+						      		   ORDER BY fid DESC, thread  ASC
+						      		) a
+						) b
+		WHERE
+				rn >= #firstIndex#   AND  rn <![CDATA[<=]]>  #lastIndex# 
+	</select>
+	<select  id="boardDAO.selectBoardDetail" resultClass="boardVO">
+	  SELECT  unq,title,name,content,fid,thread 
+	      FROM  reBoard  WHERE  unq=#unq#
+	</select>
+	
+	<update id="boardDAO.updateBoardHit">
+		UPDATE  reBoard  SET  hit=hit+1  WHERE  unq=#unq#
+	</update>
+	<select id="boardDAO.selectBoardPwdCheck"  resultClass="java.lang.Integer">
+            SELECT  COUNT(*) FROM  reBoard
+                 WHERE
+					unq=#unq#  AND  pwd=#pwd#
+
+	</select>
+	<update id="boardDAO.updateBoard">
+            UPDATE  reBoard  SET
+                         title = #title#
+                       , name = #name#
+                       , content = #content#
+                       , hit = 0
+                       , rdate = sysdate
+            WHERE
+					unq = #unq#
+	</update>
+	
+	<select id="boardDAO.selectBoardMaxThread" resultClass="java.lang.String">
+		SELECT  max(thread)  FROM  reBoard 
+			WHERE  
+					 fid = $fid$  
+				AND  thread like '$thread$_' 
+				AND  length(thread) = length('$thread$')+1
+	</select>
+	
+	<select   id="boardDAO.selectBoardReCnt" resultClass="java.lang.Integer">
+        SELECT  COUNT(*)  FROM  reBoard 
+        	WHERE
+        		 fid = (SELECT fid FROM reBoard WHERE unq=#unq#) 
+        		 AND 
+        		 thread like (SELECT thread FROM reBoard WHERE unq=#unq#) || '_'
+	</select>
+	<update  id="boardDAO.updateBoardSpace">
+   		UPDATE  reBoard  SET  
+                 title='본인에 의한 삭제',name='',content=''
+             WHERE
+                  unq = #unq#         
+	</update>
+	<delete  id="boardDAO.deleteBoard">
+	   DELETE  FROM  reBoard  WHERE  unq=#unq#
+	</delete>
+	
+	<select  id="boardDAO.selectBoardTotal" resultClass="java.lang.Integer">
+	   SELECT COUNT(*)  FROM  reBoard
+	   		WHERE
+		      		1=1
+			<isNotNull property="searchCondition">
+				<isNotEmpty property="searchCondition">
+				AND  $searchCondition$ LIKE '%' || #searchKeyword# || '%'
+				</isNotEmpty>
+			</isNotNull>
+	</select>
+
+</sqlMap>
+
+
+
+
+
+
+

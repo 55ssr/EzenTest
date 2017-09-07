@@ -1,0 +1,68 @@
+package ezen.service.impl;
+
+import java.util.List;
+
+
+import javax.annotation.Resource;
+
+import org.springframework.stereotype.Service;
+
+import egovframework.example.sample.service.SampleDefaultVO;
+import egovframework.rte.fdl.cmmn.EgovAbstractServiceImpl;
+import ezen.service.BoardAService;
+import ezen.service.BoardAVO;
+
+
+@Service("boardAService")
+public class BoardAServiceImpl extends EgovAbstractServiceImpl implements BoardAService {
+	
+	@Resource(name = "boardADAO")
+	private BoardADAO boardADAO;
+	
+	
+	@Override
+	public String insertBoardA(BoardAVO boardAVO) throws Exception {
+		// TODO Auto-generated method stub
+
+		return boardADAO.insertBoardA(boardAVO);
+	}
+
+	@Override
+	public List<?> selectBoardAList(SampleDefaultVO searchVO) {
+		// TODO Auto-generated method stub
+		return boardADAO.selectBoardAList(searchVO);
+	}
+
+
+	@Override
+	public int selectBoardATotal(SampleDefaultVO searchVO) {
+		// TODO Auto-generated method stub
+		return boardADAO.selectBoardATotal(searchVO);
+	}
+
+
+	@Override
+	public BoardAVO selectBoardADetail(BoardAVO boardAVO) throws Exception {
+		// TODO Auto-generated method stub
+		return boardADAO.selectBoardADetail(boardAVO);
+	}
+
+
+
+
+	@Override
+	public List<?> selectBoardACommList(SampleDefaultVO searchVO) throws Exception {
+		// TODO Auto-generated method stub
+		return boardADAO.selectBoardACommList(searchVO);
+	}
+
+	@Override
+	public String insertCommBoardA(BoardAVO boardAVO) throws Exception {
+		// TODO Auto-generated method stub
+		return boardADAO.insertCommBoardA(boardAVO);
+	}
+
+
+	
+
+}

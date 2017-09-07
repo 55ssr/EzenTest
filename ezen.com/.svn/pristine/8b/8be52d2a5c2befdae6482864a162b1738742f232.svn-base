@@ -1,0 +1,122 @@
+package ezen.service.impl;
+
+import java.util.List;
+
+
+import javax.annotation.Resource;
+
+import org.springframework.stereotype.Service;
+
+import egovframework.example.sample.service.SampleDefaultVO;
+import egovframework.rte.fdl.cmmn.EgovAbstractServiceImpl;
+import ezen.service.BoardAService;
+import ezen.service.BoardAVO;
+
+
+@Service("boardAService")
+public class BoardAServiceImpl extends EgovAbstractServiceImpl implements BoardAService {
+	
+	@Resource(name = "boardADAO")
+	private BoardADAO boardADAO;
+	
+	
+	@Override
+	public String insertBoardA(BoardAVO boardAVO) throws Exception {
+		// TODO Auto-generated method stub
+
+		return boardADAO.insertBoardA(boardAVO);
+	}
+
+	@Override
+	public List<?> selectBoardAList(SampleDefaultVO searchVO) {
+		// TODO Auto-generated method stub
+		return boardADAO.selectBoardAList(searchVO);
+	}
+
+
+	@Override
+	public int selectBoardATotal(SampleDefaultVO searchVO) {
+		// TODO Auto-generated method stub
+		return boardADAO.selectBoardATotal(searchVO);
+	}
+
+
+	@Override
+	public BoardAVO selectBoardADetail(BoardAVO boardAVO) throws Exception {
+		// TODO Auto-generated method stub
+		return boardADAO.selectBoardADetail(boardAVO);
+	}
+
+
+
+
+	@Override
+	public List<?> selectBoardACommList(BoardAVO boardAVO) throws Exception {
+		// TODO Auto-generated method stub
+		return boardADAO.selectBoardACommList(boardAVO);
+	}
+
+	@Override
+	public String insertCommBoardA(BoardAVO boardAVO) throws Exception {
+		// TODO Auto-generated method stub
+		return boardADAO.insertCommBoardA(boardAVO);
+	}
+
+	@Override
+	public int updateBoardA(BoardAVO boardAVO) throws Exception {
+		// TODO Auto-generated method stub
+		return boardADAO.updateBoardA(boardAVO);
+	}
+
+	@Override
+	public BoardAVO selectBoardADetail2(BoardAVO boardAVO) throws Exception {
+		// TODO Auto-generated method stub
+		return boardADAO.selectBoardADetail2(boardAVO);
+	}
+
+	@Override
+	public int deleteBoardA(BoardAVO boardAVO) throws Exception {
+		// TODO Auto-generated method stub
+		return boardADAO.deleteBoardA(boardAVO);
+	}
+
+	@Override
+	public int updateBoardAHit(int unq) throws Exception {
+		// TODO Auto-generated method stub
+		return boardADAO.updateBoardAHit(unq);
+	}
+
+	@Override
+	public int selectPwdCheck(BoardAVO boardAVO) throws Exception {
+		// TODO Auto-generated method stub
+		return boardADAO.selectPwdCheck(boardAVO);
+	}
+
+	@Override
+	public BoardAVO selectCommBoardADetail2(BoardAVO boardAVO) throws Exception {
+		// TODO Auto-generated method stub
+		return boardADAO.selectCommBoardADetail2(boardAVO);
+	}
+
+	@Override
+	public int updateCommBoardA(BoardAVO boardAVO) throws Exception {
+		// TODO Auto-generated method stub
+		return boardADAO.updateCommBoardA(boardAVO);
+	}
+
+	@Override
+	public int deleteCommBoardA(BoardAVO boardAVO) throws Exception {
+		// TODO Auto-generated method stub
+		return boardADAO.deleteCommBoardA(boardAVO);
+	}
+
+	@Override
+	public int selectCommPwdCheck(BoardAVO boardAVO) throws Exception {
+		// TODO Auto-generated method stub
+		return boardADAO.selectCommPwdCheck(boardAVO);
+	}
+
+
+	
+
+}

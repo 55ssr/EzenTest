@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="rshSpace">
+
+	<typeAlias  alias="egovMap" type="egovframework.rte.psl.dataaccess.util.EgovMap"/>
+	<typeAlias  alias="searchVO" type="egovframework.example.sample.service.SampleDefaultVO"/>
+	<typeAlias  alias="rshVO" type="ezen.service.RshVO"/>
+	
+	<insert id="rshDAO.insertRshWriteSave">
+		INSERT INTO rshMain (
+					unq
+				  , mcd
+				  , title
+				  , sdate
+				  , edate
+				  , use
+				  , rdate
+				  )
+			VALUES ( 
+					rsh_seq.nextval
+				  , ( SELECT nvl( MAX(mcd),1000 )+1 FROM rshMain )
+				  , '$title$'
+				  , '$sdate$'
+				  , '$edate$'
+				  , '$use$'
+				  , sysdate
+				 )
+	</insert>
+	
+	<select id="rshDAO.selectRshDetail" resultClass="rshVO">
+		SELECT 
+			unq,
+			mcd,
+			title,
+			to_char(sdate,'yyyy-mm-dd') sdate,
+			to_char(edate,'yyyy-mm-dd') edate,
+			to_char(rdate,'yyyy-mm-dd') rdate 
+		FROM 
+			rshMain
+		WHERE
+			unq = '$unq$'
+	</select>
+	
+	<insert id="rshDAO.insertRshSub">
+		INSERT INTO rshSub
+			(unq, scd, comm)
+		VALUES(
+				rsh_seq.nextval,
+				fn_rschSubCd(),
+				'$comm1$'
+		)
+	
+	</insert>
+	
+	<select id="rshDAO.selectRshTotal" resultClass="java.lang.Integer">
+	
+		SELECT COUNT(*) FROM rshMain
+	
+	</select>
+	
+	<select id="rshDAO.selectRshList" resultClass="egovMap">
+	SELECT b.* FROM (
+			SELECT rownum rn, a.* FROM (
+							SELECT
+									unq
+								  , mcd
+								  , title
+								  , sdate || '~' || edate AS "date"
+								  , DECODE(use,'Y','노출','비노출') AS use
+								  , rdate
+									
+								FROM
+									rshMain
+							WHERE
+									1=1
+					<isNotNull property="searchCondition">
+						<isNotEmpty property="searchCondition">
+							AND $searchCondition$ LIKE '%' || #searchKeyword# || '%'
+						</isNotEmpty>
+					</isNotNull>
+							ORDER BY rdate DESC
+											) a
+							) b
+					WHERE
+						rn >= #firstIndex#
+			<![CDATA[ 
+						AND rn <= #lastIndex#
+			]]>
+			 			
+ 	</select>
+ 	
+ 	<select id="rshDAO.selectRshMainList" resultClass="egovMap">
+ 	
+ 	<![CDATA[
+ 			SELECT 
+ 									unq
+								  , mcd
+								  , title
+								  , sdate || '~' || edate AS "date"
+								  , DECODE(use,'Y','노출','비노출') AS use
+								  , rdate
+								  ,(CASE 
+   										 WHEN 
+      										  TO_CHAR(sysdate,'yyyy-mm-dd')
+     																	   > edate
+  										THEN 'end'
+  										WHEN TO_CHAR(sysdate,'yyyy-mm-dd')
+        																	<= edate
+    									THEN sdate || '~' || edate	
+ 													   END)AS available
+ 								 
+			FROM 
+							rshMain
+					ORDER BY		rdate DESC
+			
+ 	]]>
+ 	
+ 	</select>
+ 	<select id="rshDAO.selectRshTitle" resultClass="rshVO">
+ 		SELECT title FROM rshMain
+ 		WHERE mcd ='$mcd$'
+ 	
+ 	</select>
+	<statement id="rshDAO.insertRshVoteSave">
+	
+		MERGE INTO rshEnter a
+			USING dual
+			ON (a.scd = #scd#)
+		WHEN MATCHED THEN
+			UPDATE SET a.cnt=a.cnt+1 
+		WHEN NOT MATCHED THEN
+			INSERT(a.unq,a.scd,a.cnt) 
+		VALUES(rshEnter_seq.nextval,#scd#,1)
+	
+	</statement>
+	<select id="rshDAO.selectVoteRsh" resultClass="egovMap">
+ 	
+ 			SELECT	unq,scd,comm 
+ 				FROM rshSub
+			WHERE scd like '$mcd$' || '%'
+			
+			
+ 	</select>
+	<select id="rshDAO.selectVoteResult" resultClass="egovMap">
+	
+	SELECT 
+		unq,
+		scd,
+		cnt
+	FROM 
+		rshEnter
+	WHERE 
+	 	scd like '$mcd$' || '%'
+		
+	
+	</select>
+	<select id="rshDAO.selectRshGrp" resultClass="egovMap">
+	
+	SELECT 
+	        s.scd,
+	        s.comm,
+	        e.cnt,
+			sum(e.cnt)over() total,
+			nvl(round(e.cnt/sum(e.cnt)over() * 100),0) per
+	    FROM 
+	        rshSub s, rshEnter e
+	    WHERE
+	        s.scd = e.scd(+) AND
+	        s.scd like '$mcd$' || '%'
+		ORDER by scd ASC
+	
+	</select>
+</sqlMap>
+
+
+
+
+				<!-- 
+				WHERE
+				to_char(sysdate,'yyyy-mm-dd')
+				
+					<![CDATA[ <= ]]>
+					
+				edate  -->
+
+
+
